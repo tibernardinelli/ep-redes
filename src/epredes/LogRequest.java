@@ -14,6 +14,8 @@ public class LogRequest {
 	private static AsynchronousFileChannel channel;
 	private static CompletionHandler<Integer, Object> handler;
 	private static LogRequest logRequest;
+
+	private static AtomicInteger countline = new AtomicInteger(0);
 	private static AtomicInteger count = new AtomicInteger(0);
 
 	private LogRequest() throws IOException {
@@ -37,8 +39,8 @@ public class LogRequest {
 	}
 	
 	private void _logar(String message){
-		message = message + "\n";
-		
+		int i = countline.addAndGet(1);
+		message = i + " " +  message + "\n";
 		channel.write(ByteBuffer.wrap(message.getBytes()), count.getAndAdd(message.length()));
 	}
 

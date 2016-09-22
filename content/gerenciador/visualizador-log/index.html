@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Intranet</title>
+<link href="/bootstrap-3.3.7-dist/css/bootstrap.css" rel="stylesheet">
+<style>
+.alert {
+	display: none;
+}
+
+#teste {
+	height: 400px;
+}
+
+#main {
+	position: relative;
+	height: 100%;
+	overflow-y: auto;
+	padding: 0 15px;
+}
+</style>
+</head>
+<body>
+	<div class="container">
+		<div class="page-header">
+			<h1>
+				Servidor Redes <small>intranet</small>
+			</h1>
+		</div>
+		<ol class="breadcrumb">
+			<li><a href="/gerenciador">Home</a></li>
+			<li class="active" >Visualizador Logs</li>
+		</ol>
+		<div class="alert alert-danger alert-dismissible" role="alert">
+			<button type="button" class="close" data-dismiss="alert"
+				aria-label="Close">
+				<span aria-hidden="true">&times;</span>
+			</button>
+			<strong>Erro</strong> - linhas "de" deve ser menor que "até".
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading">Visualizador de log</div>
+			<div class="panel-body">
+				<div class="row">
+					<div class="col-xs-12">
+						<label for="de">Linhas de: </label> <input id="de" type="number"
+							min="0" required /> <label for="ate"> ate: </label> <input
+							id="ate" type="number" min="0" required />
+						<button id="btn">Pesquisar</button>
+					</div>
+				</div>
+				<hr />
+				<div class="panel panel-default">
+					<div class="panel-body">
+						<div id="teste">
+								<div id="main">
+									<p id="teste2"></p>
+								</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="/bootstrap-3.3.7-dist/js/jquery-3.1.0.js"></script>
+	<script src="/bootstrap-3.3.7-dist/js/bootstrap.js"></script>
+	<script>
+		$(function() {
+			console.log('TESTE');
+
+			$('.close').alert();
+			//$("#teste2").clear();
+
+			$('#btn').click(
+					function() {
+						$('.alert').hide();
+						var de = $("#de").val() == "" ? 0 : parseInt($("#de")
+								.val());
+						var ate = $("#ate").val() == "" ? 0
+								: parseInt($("#ate").val());
+						if (de >= ate) {
+							$('.alert').show()
+							return;
+						}
+						console.log(de);
+						console.log(ate);
+						$.post('/LeitorLog', {
+							linhade : de,
+							linhaate : ate
+						}).done(function(data) {
+							$("#teste2").empty().append(data);
+						}).fail(function(data) {
+							console.log("fail" + data);
+						});
+
+					});
+		});
+	</script>
+</body>
+</html>
