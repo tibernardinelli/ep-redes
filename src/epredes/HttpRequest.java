@@ -1,10 +1,12 @@
 package epredes;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
@@ -12,6 +14,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
+
+import epredes.programas.ListagemDiretorioHtml;
+import epredes.programas.Obtemconfig;
 
 public class HttpRequest implements Runnable {
 
@@ -58,21 +63,25 @@ public class HttpRequest implements Runnable {
 		StringTokenizer stringTokenizer = new StringTokenizer(requestLine);
 		String method = stringTokenizer.nextToken();
 		String path = stringTokenizer.nextToken();
-		String filename = "./content".concat(path);
+		String filename = null;
+		if (path.contains("?"))
+			filename = "./content".concat(path.split("?")[0]);
+		else
+			filename = "./content".concat(path);
 
 		if (method.equals("POST")) {
 			StringBuilder body = new StringBuilder();
 			int length = Integer.parseInt(headers.get("Content-Length"));
-			for (int i = 0; i < length; i++ ){
-				char c = (char)br.read();
+			for (int i = 0; i < length; i++) {
+				char c = (char) br.read();
 				body.append(c);
 			}
-			
+
 			String args = body.toString();
 			System.out.println(args);
 			handlePost(socket, requestLine, path, args);
 		} else {
-			handleGet(socket, requestLine, filename);
+			handleGet(socket, requestLine, filename, headers);
 		}
 
 		// fecha as cadeias e noite.
@@ -83,74 +92,75 @@ public class HttpRequest implements Runnable {
 	private void handlePost(Socket socket, String requestLine, String filename, String args) throws IOException {
 		DataOutputStream os = new DataOutputStream(socket.getOutputStream());
 		RetornoExecucao execute = Executor.execute(filename.substring(1), args);
-		
+
 		String content = execute.getContent();
-		//String statusLine = "200" + CRLF + "Content-Type: application/json" + CRLF + "Content-Lenght: " + content.length() + CRLF+ CRLF;
-		//os.writeBytes(statusLine);
-		os.writeBytes(content + CRLF);
+		os.writeBytes(content);
 		LogRequest.logar(String.format("[%s] - Adress: %s:%s REQ:%s BYTES OUT: %d", SDF.format(new Date()),
-				socket.getInetAddress().getHostAddress(), socket.getPort(), requestLine, content.getBytes().length));
+				socket.getRemoteSocketAddress().getHostAddress(), socket.getPort(), requestLine, content.getBytes().length));
 		os.flush();
 		os.close();
 	}
 
-	private void handleGet(Socket socket, String requestLine, String filename) throws IOException {
-
-		// verifica se arquivo existe
+	private void handleGet(Socket socket, String requestLine, String filename, Map<String, String> headers)
+			throws IOException {
+		String statusLine = null;
+		String contentLineType = null;
+		String entityBody = null;
 		boolean fileexists = true;
-
-		FileInputStream fileInputStream = null;
-
+		InputStream inputStream = null;
 		File file = new File(filename);
+
 		if (file.isDirectory()) {
 			filename = filename + "/index.html";
 			file = new File(filename);
 			if (file.exists()) {
-				fileInputStream = new FileInputStream(file);
-			} else
-				fileexists = false;
+				inputStream = new FileInputStream(file);
+			} else {
+				if (new Obtemconfig().Executa(null).getContent().equals("s")) {
+					RetornoExecucao executa = new ListagemDiretorioHtml().Executa(null);
+					inputStream = new ByteArrayInputStream(executa.getContent().getBytes());
+				} else {
+					fileexists = false;
+					inputStream = new FileInputStream(new File("./content/gerenciador/404.html"));
+				}
+			}
 		} else {
 			try {
-				fileInputStream = new FileInputStream(filename);
+				inputStream = new FileInputStream(filename);
 			} catch (Exception e) {
 				fileexists = false;
+				inputStream = new FileInputStream(new File("./content/404.html"));
 			}
 		}
 
-		// prepara retorno
-		String statusLine = null;
-		String contentLineType = null;
-		String entityBody = null;
-
-		if (fileexists) {
+		if (requestLine.contains("gerenciador") && (!headers.containsKey("Authorization"))) {
+			statusLine = "HTTP/1.1 401 Not authorized";
+			contentLineType = "WWW-Authenticate: Basic";
+		} else if (fileexists) {
 			statusLine = "HTTP/1.1 200 OK";
 			contentLineType = "Content-type: " + contentType(filename);
 		} else {
 			statusLine = "HTTP/1.1 404 Not Found";
 			contentLineType = "Content-type: text/html";
-			entityBody = "<html><head><title>Not Found</title></head><body>bad bad server, no donut for you!</body></html>"
-					+ CRLF;
 		}
 
 		String saida = statusLine + CRLF + contentLineType + CRLF + CRLF;
 
 		LogRequest.logar(String.format("[%s] - Adress: %s:%s REQ:%s BYTES OUT: %d", SDF.format(new Date()),
-				socket.getInetAddress().getHostAddress(), socket.getPort(), requestLine, saida.getBytes().length));
+				socket.getRemoteSocketAddress(), socket.getPort(), requestLine, saida.getBytes().length));
 
 		DataOutputStream os = new DataOutputStream(socket.getOutputStream());
 		os.writeBytes(saida);
-		if (fileexists) {
-			sendBytes(fileInputStream, os);
-			fileInputStream.close();
-		} else {
-			os.writeBytes(entityBody);
-			os.flush();
+
+		if (inputStream != null) {
+			sendBytes(inputStream, os);
+			inputStream.close();
 		}
 		os.close();
 
 	}
 
-	private static void sendBytes(FileInputStream fis, DataOutputStream os) throws IOException {
+	private static void sendBytes(InputStream fis, DataOutputStream os) throws IOException {
 		byte[] buffer = new byte[1024];
 		int bytes = 0;
 		while ((bytes = fis.read(buffer)) != -1) {

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Intranet</title>
+<link href="/bootstrap-3.3.7-dist/css/bootstrap.css" rel="stylesheet">
+<!--  <link href="/bootstrap-3.3.7-dist/css/font-awesome.css" rel="stylesheet">-->
+	<link href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.css" 
+  rel="stylesheet"  type='text/css'>
+<style>
+.alert {
+	display: none;
+}
+
+#teste {
+	height: 400px;
+}
+
+#main {
+	position: relative;
+	height: 100%;
+	overflow-y: auto;
+	padding: 0 15px;
+}
+</style>
+</head>
+<body>
+	<div class="container">
+		<div class="page-header">
+			<h1>
+				Servidor Redes <small>intranet</small>
+			</h1>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading">Listagem diretorio {{a}}</div>
+			<div class="panel-body">
+				<div class="row">
+					<div class="col-md-4" id="spinner">
+						<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i> <span
+							class="sr-only">Loading...</span>
+					</div>
+						<ul id="abc" class="fa-ul">
+						</ul>
+				</div>
+			</div>
+		</div>
+		<script src="/bootstrap-3.3.7-dist/js/jquery-3.1.0.js"></script>
+		<script src="/bootstrap-3.3.7-dist/js/bootstrap.js"></script>
+		<script>
+			$(function() {
+				const
+				link = "<a href='{{b}}'>{{c}}<a>";
+				const
+				item = "<li><i class='{{d}}'></i>{{a}}</li>";
+				var path = "./content" + window.location.pathname;
+
+				$.post("/ListagemDiretorio", {
+					file : path
+				}, function(data) {
+					console.log(data);
+					$("#spinner").hide();
+					
+					var object = JSON.parse(data);
+					if (object != null && object.retorno != null) {
+						var li = $("#abc");
+						for ( var d in object.retorno) {
+							var it = object.retorno[d];
+							var text = it.name;
+							var glyph = "fa-li fa ";
+							if (it.directory) {
+								text = link.replace("{{b}}",
+										window.location.pathname + "/" + text)
+										.replace("{{c}}", text);
+								glyph = glyph + "fa-folder-open";
+							} else {
+								glyph = glyph + "fa-file-o";
+							}
+							text = item.replace("{{a}}", text);
+							text = text.replace("{{d}}", glyph);
+							li.append(text);
+						}
+					}
+				});
+
+				var text = $(".panel-heading").text();
+				$(".panel-heading").text(
+						text.replace("{{a}}", window.location.pathname));
+
+			});
+		</script>
+</body>
+</html>
