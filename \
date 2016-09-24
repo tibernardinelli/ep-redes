@@ -1,0 +1,38 @@
+Commit
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+# On branch master
+# Your branch is ahead of 'origin/master' by 2 commits.
+#   (use "git push" to publish your local commits)
+#
+# Changes to be committed:
+#	modified:   .DS_Store
+#	modified:   .classpath
+#	deleted:    bin/.DS_Store
+#	deleted:    bin/epredes/HttpRequest.class
+#	deleted:    bin/epredes/LogRequest$1.class
+#	deleted:    bin/epredes/LogRequest.class
+#	deleted:    bin/epredes/WebServer.class
+#	new file:   commons-io-2.5.jar
+#	new file:   config.properties
+#	new file:   content/404.html
+#	new file:   content/bootstrap-3.3.7-dist/css/font-awesome.css
+#	new file:   content/bootstrap-3.3.7-dist/css/font-awesome.min.css
+#	new file:   content/bootstrap-3.3.7-dist/fonts/FontAwesome.otf
+#	new file:   content/bootstrap-3.3.7-dist/fonts/fontawesome-webfont.eot
+#	new file:   content/bootstrap-3.3.7-dist/fonts/fontawesome-webfont.svg
+#	new file:   content/bootstrap-3.3.7-dist/fonts/fontawesome-webfont.ttf
+#	new file:   content/bootstrap-3.3.7-dist/fonts/fontawesome-webfont.woff
+#	new file:   content/bootstrap-3.3.7-dist/fonts/fontawesome-webfont.woff2
+#	new file:   content/gerenciador/config/index.html
+#	new file:   content/gerenciador/diretorio.html
+#	modified:   content/gerenciador/index.html
+#	modified:   content/gerenciador/visualizador-log/index.html
+#	new file:   content/pastadeteste/arquivodeteste
+#	new file:   gson-2.7.jar
+#	modified:   requests.log
+#	modified:   src/epredes/Executor.java
+#	modified:   src/epredes/HttpRequest.java
+#	modified:   src/epredes/WebServer.java
+#	new file:   trabalho.docx
+#

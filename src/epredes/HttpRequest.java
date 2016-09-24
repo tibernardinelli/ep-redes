@@ -96,7 +96,7 @@ public class HttpRequest implements Runnable {
 		String content = execute.getContent();
 		os.writeBytes(content);
 		LogRequest.logar(String.format("[%s] - Adress: %s:%s REQ:%s BYTES OUT: %d", SDF.format(new Date()),
-				socket.getRemoteSocketAddress().getHostAddress(), socket.getPort(), requestLine, content.getBytes().length));
+				socket.getRemoteSocketAddress(), socket.getPort(), requestLine, content.getBytes().length));
 		os.flush();
 		os.close();
 	}
@@ -121,7 +121,7 @@ public class HttpRequest implements Runnable {
 					inputStream = new ByteArrayInputStream(executa.getContent().getBytes());
 				} else {
 					fileexists = false;
-					inputStream = new FileInputStream(new File("./content/gerenciador/404.html"));
+					inputStream = new FileInputStream(new File("./content/404.html"));
 				}
 			}
 		} else {
